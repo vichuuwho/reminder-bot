@@ -5,10 +5,14 @@ from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
+from aiogram.client.session import AiohttpSession
 
 load_dotenv()
-TOKEN = os.getenv('BOT_TOKEN')
-bot = Bot(token=TOKEN)
+
+PROXY_URL = "http://:eed68360458af63073bac1394e8c7a48da70726f7879672e73697465@proxyg.site:443"
+session = AiohttpSession(proxy=PROXY_URL)
+
+bot = Bot(token=TOKEN, session=session)
 dp = Dispatcher()
 
 @dp.message(Command('start'))
