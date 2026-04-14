@@ -10,7 +10,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-PROXY_URL = "socks5://FS1BWP:8dzZBV@168.196.239.154:9116"
+PROXY_URL = "http://FS1BWP:8dzZBV@168.196.239.154:9116"
 session = AiohttpSession(proxy=PROXY_URL)
 
 bot = Bot(token=TOKEN, session=session)
