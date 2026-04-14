@@ -1,0 +1,24 @@
+import asyncio
+from mailbox import Message
+from os import getenv
+
+from aiogram import Bot, Dispatcher, types
+from aiogram.filters import Command
+
+TOKEN = getenv('BOT_TOKEN')
+bot = Bot(token=TOKEN)
+dp = Dispatcher()
+
+@dp.message_handler(commands=['start'])
+async def cmd_start(message: types.Message):
+    await message.answer(f'Привет, {message.from_user.first_name}! Готов записывать Ваши напоминания')
+
+@dp.message_handler(commands=['help'])
+async def cmd_help(message: types.Message):
+    await message.answer(f'Мои доступные команды: \n' '/start - запуск бота \n' '/help - справка')
+
+async def main():
+    await dp.start_polling(bot)
+
+if __name__ == '__main__':
+    asyncio.run(main())
