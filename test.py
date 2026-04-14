@@ -1,11 +1,13 @@
 import asyncio
 from mailbox import Message
-from os import getenv
+import os
+from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 
-TOKEN = getenv('BOT_TOKEN')
+load_dotenv()
+TOKEN = os.getenv('BOT_TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
