@@ -11,11 +11,11 @@ TOKEN = os.getenv('BOT_TOKEN')
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-@dp.message(Command=['start'])
+@dp.message(Command('start'))
 async def cmd_start(message: types.Message):
     await message.answer(f'Привет, {message.from_user.first_name}! Готов записывать Ваши напоминания')
 
-@dp.message(Command=['help'])
+@dp.message(Command('help'))
 async def cmd_help(message: types.Message):
     await message.answer(f'Мои доступные команды: \n' '/start - запуск бота \n' '/help - справка')
 
