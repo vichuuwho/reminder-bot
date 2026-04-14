@@ -10,7 +10,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-PROXY_URL = "http://:eed68360458af63073bac1394e8c7a48da70726f7879672e73697465@proxyg.site:443"
+PROXY_URL = "socks5://proxyg.site:443"
 session = AiohttpSession(proxy=PROXY_URL)
 
 bot = Bot(token=TOKEN, session=session)
