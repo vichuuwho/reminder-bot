@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
-from aiogram.client.session.aiohttp import AiohttpSession
+
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
