@@ -13,9 +13,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 load_dotenv()
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("tg_token")
 
-PROXY_URL = os.getenv("PROXY_URL", "http://yFXbdb:YRH2NR@72.56.181.103:8000")
+PROXY_URL = os.getenv("PROXY_URL")
 session = AiohttpSession(proxy=PROXY_URL) if PROXY_URL else None
 
 bot = Bot(token=TOKEN, session=session) if session else Bot(token=TOKEN)
@@ -96,7 +96,6 @@ def _parse_tz_offset(text: str) -> int | None:
 
 
 def _parse_msk_diff(text: str) -> int | None:
-    # Difference relative to Moscow time (MSK = UTC+3): accepts +2, -1, +02:30, -0430, MSK+2
     s = (text or "").strip().upper().replace("МСК", "").replace("MSK", "").strip()
     m = re.match(r"^([+-])\s*(\d{1,2})(?::?(\d{2}))?\s*$", s)
     if not m:
@@ -163,7 +162,7 @@ async def cmd_your_time(message: types.Message, state: FSMContext):
     await message.answer(
         "Какая у тебя разница с время МСК?\n"
         "Примеры: +2, -1, +02:30.\n"
-        "Если у тебя Москва — напиши `+0`."
+        "Если у тебя Москва — напиши +0."
     )
 
 
@@ -174,7 +173,6 @@ async def msk_diff_set(message: types.Message, state: FSMContext):
         await message.answer("Не понял. Примеры: +2, -1, +02:30")
         return
 
-    # MSK is UTC+3 (180 minutes). User offset = MSK + diff.
     user_offset = 180 + diff_min
     if user_offset < -14 * 60 or user_offset > 14 * 60:
         await message.answer("Не похоже на реальный часовой пояс. Ты врун. Напиши снова.")
@@ -224,7 +222,6 @@ async def add_event_date(message: types.Message, state: FSMContext):
         await message.answer("Неверный формат даты.")
         return
 
-    # Fast check: date can't be earlier than today in user's timezone
     now_user = datetime.now(tz=_user_tz(message.from_user.id))
     if parsed < now_user.date():
         await message.answer("Эта дата уже прошла.")
@@ -243,7 +240,6 @@ async def add_event_time(message: types.Message, state: FSMContext):
         return
     await state.update_data(time=time_s)
 
-    # Now we can validate "not in the past" early (date+time already known)
     data = await state.get_data()
     date_s = (data.get("date") or "").strip()
     dt = _event_dt_user_tz(message.from_user.id, date_s, time_s)
@@ -320,7 +316,6 @@ async def add_event_repeat(message: types.Message, state: FSMContext):
     place = (data.get("place") or "").strip()
     remind_before_min = int(data.get("remind_before_min") or 0)
 
-    # Re-check against "past" right before saving (user could wait long)
     dt = _event_dt_user_tz(message.from_user.id, date, time)
     if dt is None:
         await state.clear()
@@ -354,10 +349,8 @@ def _cleanup_and_roll_user_events(user_id: int) -> None:
         if dt is None:
             continue
 
-        # passed events
         if now_user > dt:
             if e.repeat == "daily":
-                # roll forward to next occurrence (today+1 etc.)
                 next_dt = dt
                 while next_dt <= now_user:
                     next_dt = next_dt + timedelta(days=1)
@@ -498,7 +491,6 @@ async def edit_value(message: types.Message, state: FSMContext):
         await message.answer("Что-то пошло не так. /edit_event")
         return
 
-    # validate and apply only one field
     kwargs: dict[str, object] = {}
     if field == "1":
         if not value:
@@ -537,12 +529,11 @@ async def edit_value(message: types.Message, state: FSMContext):
         kwargs["repeat"] = "once" if value == "1" else "daily"
         kwargs["reset_notified"] = True
 
-    # check that resulting datetime is not in the past for date/time edits
     events = list_events(user_id=message.from_user.id)
     if 1 <= idx <= len(events) and field in {"2", "3"}:
         e = events[idx - 1]
-        new_date = kwargs.get("date", e.date)  # type: ignore[assignment]
-        new_time = kwargs.get("time", e.time)  # type: ignore[assignment]
+        new_date = kwargs.get("date", e.date)
+        new_time = kwargs.get("time", e.time)
         dt = _event_dt_user_tz(message.from_user.id, str(new_date), str(new_time))
         if dt is None:
             await message.answer("Не смог распознать дату/время.")
@@ -553,7 +544,7 @@ async def edit_value(message: types.Message, state: FSMContext):
             return
         kwargs["reset_notified"] = True
 
-    ok = update_event_fields_by_index(user_id=message.from_user.id, index_1based=idx, **kwargs)  # type: ignore[arg-type]
+    ok = update_event_fields_by_index(user_id=message.from_user.id, index_1based=idx, **kwargs)
     await state.clear()
     await message.answer("Готово. /events" if ok else "Не получилось обновить. /events")
 
